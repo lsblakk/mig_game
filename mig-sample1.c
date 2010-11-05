@@ -216,7 +216,7 @@ main(void)
 		
 		n = chooser(7, 0);
 		if (n == 1) {
-			do_simple1();		// draws a point (pixel) in the corner near the button you press
+			do_simple8();		// Lukas test game dev
 		} else if (n == 2) {
 			do_simple2();		// each button plays a "song"
 		} else if (n == 3) {
@@ -228,7 +228,7 @@ main(void)
 		} else if (n == 6) {
 			do_simple6();		// simple animation of some line patterns
 		} else {	// (n == 4)
-			do_simple8();		// my test game (Lukas)
+			do_simple1();		// draws a point (pixel) in the corner near the button you press
 		}
 
 	}
@@ -757,13 +757,72 @@ int do_simple7(void)
 int do_simple8(void)
 {
 	uint8_t n;
-	uint8_t pick;
+	uint8_t px, py;
+	uint8_t nselect = 0;
+	uint8_t leftx;
+	uint8_t dx = 1;
+	uint8_t selectflag = 0;
+	uint8_t blinkframes = 1;
+	uint8_t nchoices = 0;
+	
+	nchoices = XSCREEN; // set to screen width
+	
+	// start moving from far left
+	leftx = 0;
+
+	swapinterval(5);		// XXX this should be restored upon exit!
+	cleardisplay();
 
 	while (1) {
-		for (n = 7; n <= 7; n++) {
-			pick = chooser(n, 0);		// use buttons to choose between 2, 3 or 4 choices
+		cleardisplay();
+		
+		handlebuttons();
+		if (ButtonB && ButtonBEvent) {			// button B moves selection left
+			if (nselect > 0) {
+				nselect--;
+				playsong(ChirpSong);
+			}
+			selectflag = 0;
+			ButtonBEvent = 0;
+		} else if (ButtonC && ButtonCEvent) {	// button C moves selection right
+			if (nselect < (nchoices-1)) {
+				nselect++;
+				playsong(ChirpSong);
+			}
+			selectflag = 0;
+			ButtonCEvent = 0;
+		} else if (ButtonD && ButtonDEvent) {	// button D selects it!
+			selectflag = 1;
+			blinkframes = 8;
+			playsong(EvilEntrySong);
+			ButtonDEvent = 0;
 		}
+		
+		py = 0; // dropping happens from the top
+		if (selectflag) {
+			if (blinkframes % 2 == 0) {
+				setcolor(YELLOW); // flash the selected pixel
+			} else {
+				setcolor(GREEN);
+			}
+			blinkframes--;
+			if (blinkframes == 0) {
+				selectflag = 0;
+				break;				// we're done...
+			}
+		} else {
+			setcolor(GREEN);
+		}
+
+		px = leftx + nselect;
+		drawpoint(px, py); // draws moving green dot along the top
+
+		swapbuffers();			// wait for next display cycle
+		
 	}
+	
+	swapbuffers();				// adds a slight delay
+
 }
 
 
