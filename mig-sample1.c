@@ -151,6 +151,7 @@ int do_simple4(void);
 int do_simple5(void);
 int do_simple6(void);
 int do_simple7(void);
+int do_simple8(void);
 
 
 static uint16_t __sr = 0x5995;		// starting seed (note: use anything but zero here!)
@@ -212,25 +213,22 @@ main(void)
 	initaudio();			// XXX eventually, we remove this!
 	
 	while (1) {
-				
-		// do_simple1();
-		//do_simple2();
-		//do_simple3();
-		//do_simple3b();
-		//do_simple4();
-		//do_simple5();
-		//do_simple6();
-		//do_simple7();
 		
-		n = chooser(4, 0);
+		n = chooser(7, 0);
 		if (n == 1) {
-			do_simple2();		// each button plays a "song"
+			do_simple1();		// draws a point (pixel) in the corner near the button you press
 		} else if (n == 2) {
-			do_simple3b();		// use random number generator to fill the screen with dots
+			do_simple2();		// each button plays a "song"
 		} else if (n == 3) {
+			do_simple4();		// using readpixel function to determine a collision
+		} else if (n == 4) {
+			do_simple3b();		// use random number generator to fill the screen with dots
+		} else if (n == 5) {
 			do_simple5();		// simple animation of an "M"
-		} else {	// (n == 4)
+		} else if (n == 6) {
 			do_simple6();		// simple animation of some line patterns
+		} else {	// (n == 4)
+			do_simple8();		// my test game (Lukas)
 		}
 
 	}
@@ -753,6 +751,21 @@ int do_simple7(void)
 	}
 }
 
+//
+// do_simple8 - interactive dot on top row, move along top with B and C buttons
+//
+int do_simple8(void)
+{
+	uint8_t n;
+	uint8_t pick;
+
+	while (1) {
+		for (n = 7; n <= 7; n++) {
+			pick = chooser(n, 0);		// use buttons to choose between 2, 3 or 4 choices
+		}
+	}
+}
+
 
 //
 // chooser - this presents a simple UI to choose between a small number (2-4) of choices
@@ -767,16 +780,16 @@ uint8_t chooser(uint8_t nchoices, uint8_t ndefault)
 	uint8_t px, py;
 	uint8_t nselect = 0;
 	uint8_t leftx;
-	uint8_t dx = 2;
+	uint8_t dx = 1;
 	uint8_t selectflag = 0;
 	uint8_t blinkframes = 1;
 	
-	if (nchoices > 4) {		// error checking
-		nchoices = 4;
+	if (nchoices > XSCREEN) {		// error checking 
+		nchoices = XSCREEN;
 	}
 	
-	// now, adjust layout based on #choices - keep it centered
-	leftx = 4 - nchoices;		// e.g. for 3 choices, the leftmost choice is at (1 2)
+	// start choices on far left -- taking out centering for more choices
+	leftx = 0;
 
 
 	swapinterval(5);		// XXX this should be restored upon exit!
@@ -794,18 +807,21 @@ uint8_t chooser(uint8_t nchoices, uint8_t ndefault)
 		if (ButtonB && ButtonBEvent) {			// button B moves selection left
 			if (nselect > 0) {
 				nselect--;
+				playsong(ChirpSong);
 			}
 			selectflag = 0;
 			ButtonBEvent = 0;
 		} else if (ButtonC && ButtonCEvent) {	// button C moves selection right
 			if (nselect < (nchoices-1)) {
 				nselect++;
+				playsong(ChirpSong);
 			}
 			selectflag = 0;
 			ButtonCEvent = 0;
 		} else if (ButtonD && ButtonDEvent) {	// button D selects it!
 			selectflag = 1;
 			blinkframes = 8;
+			playsong(EvilEntrySong);
 			ButtonDEvent = 0;
 		}
 		
